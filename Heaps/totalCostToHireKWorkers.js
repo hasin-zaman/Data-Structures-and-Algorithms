@@ -49,42 +49,33 @@ class MinHeap {
     }
 }
 
-var SmallestInfiniteSet = function() {
-    this.minHeap = new MinHeap()
-    this.minHeap.enqueue(1)
-    this.numbers = new Set()
-    this.numbers.add(1)
-    this.nextSmallest = 2
-};
-
 /**
+ * @param {number[]} costs
+ * @param {number} k
+ * @param {number} candidates
  * @return {number}
  */
-SmallestInfiniteSet.prototype.popSmallest = function() {
-    const smallest = this.minHeap.dequeue()
-    this.numbers.delete(smallest)
-    if(this.minHeap.isEmpty()) {
-        this.minHeap.enqueue(this.nextSmallest)
-        this.numbers.add(this.nextSmallest)
-        this.nextSmallest++
-    }
-    return smallest
-};
+var totalCost = function(costs, k, candidates) {
+    const leftHeap = new MinHeap(), rightHeap = new MinHeap()
+    let remaining = []
 
-/** 
- * @param {number} num
- * @return {void}
- */
-SmallestInfiniteSet.prototype.addBack = function(num) {
-    if(!this.numbers.has(num) && num < this.nextSmallest) {
-        this.minHeap.enqueue(num)
-        this.numbers.add(num)
+    for(let i=0; i<costs.length; i++) {
+        if(i < candidates) leftHeap.enqueue(costs[i])
+        else if(i >= costs.length - candidates) rightHeap.enqueue(costs[i])
+        else remaining.push(costs[i])
     }
-};
 
-/** 
- * Your SmallestInfiniteSet object will be instantiated and called as such:
- * var obj = new SmallestInfiniteSet()
- * var param_1 = obj.popSmallest()
- * obj.addBack(num)
- */
+    let cost = 0
+    for(let i=0; i<k; i++) {
+        if(!rightHeap.isEmpty() && (leftHeap.isEmpty() || rightHeap.top() < leftHeap.top())) {
+            cost += rightHeap.dequeue()
+            if(remaining.length > 0) rightHeap.enqueue(remaining.pop())
+        }
+        else {
+            cost += leftHeap.dequeue()
+            if(remaining.length > 0) leftHeap.enqueue(remaining.shift())
+        }
+    }
+
+    return cost
+};
